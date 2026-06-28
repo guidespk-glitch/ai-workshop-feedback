@@ -175,7 +175,23 @@ export const ParticipantPage: React.FC = () => {
             className="submit-feedback-btn btn-capsule"
             disabled={!isFormValid || submitting}
           >
-            {submitting ? 'กำลังส่งคำตอบ...' : 'ส่งคำตอบ'}
+            {submitting ? (
+              'กำลังส่งคำตอบ...'
+            ) : (
+              <>
+                <svg
+                  viewBox="0 0 24 24"
+                  width="20"
+                  height="20"
+                  fill="currentColor"
+                  style={{ transform: 'rotate(-30deg) translateY(-2px)' }}
+                  aria-hidden="true"
+                >
+                  <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                </svg>
+                ส่งคำตอบ
+              </>
+            )}
           </button>
         </form>
       </main>

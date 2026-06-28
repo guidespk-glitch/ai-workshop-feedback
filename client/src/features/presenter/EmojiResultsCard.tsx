@@ -6,7 +6,7 @@ interface EmojiResultsCardProps {
   emojis: EmojiResult[];
 }
 
-const EMOJI_DISPLAY_ORDER: Record<EmojiId, number> = {
+const DEFAULT_ORDER: Record<EmojiId, number> = {
   love: 1,
   wow: 2,
   excited: 3,
@@ -17,74 +17,84 @@ const EMOJI_DISPLAY_ORDER: Record<EmojiId, number> = {
   angry: 8,
 };
 
-export const emojiSize = (count: number, maxCount: number): number => {
-  if (maxCount <= 0) return 48;
-  return Math.round(48 + 72 * Math.sqrt(count / maxCount));
-};
-
 export const EmojiResultsCard: React.FC<EmojiResultsCardProps> = ({ emojis }) => {
-  const maxCount = emojis.length > 0 ? Math.max(...emojis.map((e) => e.count)) : 0;
-
-  // Sort by count descending, then by display order to keep layout stable when counts are equal
-  const sortedEmojis = [...emojis].sort((a, b) => {
+  // Sort all emojis by count descending. Tie-breaker is the default order.
+  const sorted = [...emojis].sort((a, b) => {
     if (b.count !== a.count) {
       return b.count - a.count;
     }
-    return EMOJI_DISPLAY_ORDER[a.id] - EMOJI_DISPLAY_ORDER[b.id];
+    return DEFAULT_ORDER[a.id] - DEFAULT_ORDER[b.id];
   });
+
+  // Group into podium tiers:
+  // High Tier (Ranks 1-3)
+  const rank1 = sorted[0];
+  const rank2 = sorted[1];
+  const rank3 = sorted[2];
+  
+  // Mid Tier (Ranks 4-5)
+  const rank4 = sorted[3];
+  const rank5 = sorted[4];
+  
+  // Low Tier (Ranks 6-8)
+  const rank6 = sorted[5];
+  const rank7 = sorted[6];
+  const rank8 = sorted[7];
+
+  // Layout order:
+  // Row 1: [Rank 3, Rank 1, Rank 2]
+  const row1 = [rank3, rank1, rank2].filter(Boolean);
+  // Row 2: [Rank 4, Rank 5]
+  const row2 = [rank4, rank5].filter(Boolean);
+  // Row 3: [Rank 6, Rank 7, Rank 8]
+  const row3 = [rank6, rank7, rank8].filter(Boolean);
+
+  const renderEmojiItem = (item: EmojiResult, tier: 'high' | 'mid' | 'low') => {
+    const option = getEmojiOption(item.id);
+    const originalRank = sorted.findIndex((s) => s.id === item.id) + 1;
+    const isFirst = originalRank === 1;
+
+    return (
+      <div
+        key={item.id}
+        className={`emoji-podium-item emoji-tier-${tier} ${isFirst ? 'emoji-rank-first' : ''}`}
+        aria-label={`${option.label} ${item.count} คน`}
+        data-rank={originalRank}
+        style={{
+          transition: 'all 0.3s ease',
+        }}
+      >
+        <div className="emoji-podium-graphic">{option.emoji}</div>
+        <div className="emoji-podium-details">
+          <span className="emoji-podium-label">{option.label}</span>
+          <span className="emoji-podium-count">{item.count} คน</span>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="presenter-card emoji-results-card">
-      <h2 className="presenter-card-title">ผลคำตอบข้อ 2: ความรู้สึกในการอบรม (Emoji)</h2>
-
-      <div className="emoji-list-container">
-        {sortedEmojis.map((item, index) => {
-          const option = getEmojiOption(item.id);
-          const size = emojiSize(item.count, maxCount);
-          const rank = index + 1;
-
-          return (
-            <div
-              key={item.id}
-              className="emoji-result-item"
-              aria-label={`${option.label} ${item.count} คน`}
-              data-rank={rank}
-              style={{
-                transition: 'all 0.3s ease',
-              }}
-            >
-              <div className="emoji-result-rank-badge">{rank}</div>
-              
-              <div
-                className="emoji-result-graphic"
-                style={{
-                  fontSize: `${size}px`,
-                  lineHeight: '1',
-                  transition: 'font-size 0.3s ease',
-                }}
-              >
-                {option.emoji}
-              </div>
-
-              <div className="emoji-result-details">
-                <span className="emoji-result-label">{option.label}</span>
-                <div className="emoji-result-progress-bar-container">
-                  <div
-                    className="emoji-result-progress-bar"
-                    style={{
-                      width: `${maxCount > 0 ? (item.count / maxCount) * 100 : 0}%`,
-                      transition: 'width 0.3s ease',
-                    }}
-                  ></div>
-                </div>
-              </div>
-
-              <span className="emoji-result-count">
-                <strong>{item.count}</strong> คน
-              </span>
-            </div>
-          );
-        })}
+      <h2 className="presenter-card-title">
+        <span className="card-badge">2</span>
+        ผลความรู้สึกจาก Emoji
+      </h2>
+      
+      <div className="emoji-podium-container">
+        {/* Row 1: High Tier */}
+        <div className="emoji-podium-row emoji-row-high">
+          {row1.map((item) => renderEmojiItem(item, 'high'))}
+        </div>
+        
+        {/* Row 2: Mid Tier */}
+        <div className="emoji-podium-row emoji-row-mid">
+          {row2.map((item) => renderEmojiItem(item, 'mid'))}
+        </div>
+        
+        {/* Row 3: Low Tier */}
+        <div className="emoji-podium-row emoji-row-low">
+          {row3.map((item) => renderEmojiItem(item, 'low'))}
+        </div>
       </div>
     </div>
   );
