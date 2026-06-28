@@ -11,7 +11,7 @@ export const AnswerFields: React.FC<AnswerFieldsProps> = ({ answers, onChange })
       <div className="question-header">
         <div className="question-number">1</div>
         <h2 className="question-title">
-          ระบุคำที่ท่านคิดถึงเป็นอันดับแรกเกี่ยวกับ AI บูรณาการในห้องเรียน (กรอก 3 คำ)
+          ขอ 3 คำ สิ่งที่ได้จากการอบรมครั้งนี้
         </h2>
       </div>
       <p className="question-subtitle">
