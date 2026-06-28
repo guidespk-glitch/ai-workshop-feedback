@@ -22,8 +22,8 @@ export const BrandHeader: React.FC<BrandHeaderProps> = ({ onLogoClick }) => {
       <div className="brand-time-badge">
         <span>⏱️ ใช้เวลาไม่เกิน 1 นาที</span>
       </div>
-      <div className="header-star-container">
-        <svg viewBox="0 0 100 100" width="70" height="70" className="header-star-svg" aria-hidden="true">
+      <div className="learning-doodles" data-testid="learning-doodles" aria-hidden="true">
+        <svg viewBox="0 0 100 100" width="70" height="70" className="header-star-svg doodle-star">
           <defs>
             <linearGradient id="starGrad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#ffd43b" />
@@ -34,6 +34,12 @@ export const BrandHeader: React.FC<BrandHeaderProps> = ({ onLogoClick }) => {
           <circle cx="40" cy="48" r="3" fill="#212529" />
           <circle cx="60" cy="48" r="3" fill="#212529" />
           <path d="M46 54 Q50 58 54 54" fill="none" stroke="#212529" strokeWidth="3" strokeLinecap="round" />
+        </svg>
+        <svg viewBox="0 0 64 86" width="46" height="62" className="doodle-device">
+          <rect x="8" y="4" width="48" height="76" rx="8" fill="#ffffff" stroke="#1976df" strokeWidth="5" />
+          <rect x="15" y="15" width="34" height="45" rx="3" fill="#eaf4ff" />
+          <path d="M18 23h28M18 31h21M18 39h25" stroke="#88beff" strokeWidth="3" strokeLinecap="round" />
+          <circle cx="32" cy="69" r="4" fill="#ff7da8" />
         </svg>
       </div>
     </header>

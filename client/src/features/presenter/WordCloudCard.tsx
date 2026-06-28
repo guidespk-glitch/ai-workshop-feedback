@@ -32,7 +32,10 @@ export const WordCloudCard: React.FC<WordCloudCardProps> = ({ words }) => {
 
   return (
     <div className="presenter-card word-cloud-card">
-      <h2 className="presenter-card-title">ผลคำตอบข้อ 1: สิ่งที่ได้จากการอบรมครั้งนี้</h2>
+      <h2 className="presenter-card-title" data-testid="word-cloud-title">
+        <span className="card-badge">1</span>
+        ผลคำตอบข้อ 1: สิ่งที่ได้จากการอบรมครั้งนี้
+      </h2>
 
       {words.length === 0 ? (
         <div className="empty-results-container">

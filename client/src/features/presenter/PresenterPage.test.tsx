@@ -55,6 +55,8 @@ describe('PresenterPage', () => {
     const cloud = screen.getByTestId('word-cloud');
     expect(cloud.tagName).toBe('svg');
     expect(cloud).toHaveAttribute('viewBox', '0 0 720 380');
+    expect(screen.getByTestId('word-cloud-title').querySelector('.card-badge')).toHaveTextContent('1');
+    expect(screen.getByTestId('emoji-results-title').querySelector('.card-badge')).toHaveTextContent('2');
 
     // Verify word cloud layout sizes
     const aiWord = screen.getByText('AI');

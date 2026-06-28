@@ -102,7 +102,7 @@ export const EmojiResultsCard: React.FC<EmojiResultsCardProps> = ({ emojis }) =>
 
   return (
     <div className="presenter-card emoji-results-card">
-      <h2 className="presenter-card-title">
+      <h2 className="presenter-card-title" data-testid="emoji-results-title">
         <span className="card-badge">2</span>
         ผลความรู้สึกจาก Emoji
       </h2>
