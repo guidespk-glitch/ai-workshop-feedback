@@ -207,6 +207,24 @@ export function createApp({
     }
   });
 
+  // Presenter Reset Endpoint (Guarded by session auth)
+  app.post('/api/presenter/reset', async (req, res) => {
+    if (!(req.session as any).presenter) {
+      res.status(401).json({ error: 'ไม่มีสิทธิ์เข้าถึงข้อมูลผู้นำเสนอ' });
+      return;
+    }
+
+    try {
+      await submissionService.clearAllSubmissions();
+      const emptyResults = await resultsService.getResults();
+      publishResults(emptyResults);
+      res.status(200).json({ success: true, message: 'ล้างข้อมูลสำเร็จ' });
+    } catch (error) {
+      console.error('Failed to reset submissions:', error);
+      res.status(500).json({ error: 'เกิดข้อผิดพลาดในการล้างข้อมูล' });
+    }
+  });
+
   // Serve static assets in production
   if (config.nodeEnv === 'production') {
     const rootDir = path.dirname(fileURLToPath(import.meta.url)); // dist/server

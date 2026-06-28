@@ -45,6 +45,10 @@ class MockSubmissionRepository {
       emojiCounts,
     };
   }
+
+  async clearAll() {
+    this.submissions = [];
+  }
 }
 
 async function startServer() {

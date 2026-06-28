@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { WordCloudCard } from './WordCloudCard';
 import { EmojiResultsCard } from './EmojiResultsCard';
-import { getPresenterSession, getPresenterResults, logoutPresenter } from './api';
+import { getPresenterSession, getPresenterResults, logoutPresenter, resetPresenterData } from './api';
 import { connectResultsSocket } from './socket';
 import type { ResultsSnapshot } from '../../../../shared/results';
 
@@ -87,6 +87,33 @@ export const PresenterPage: React.FC<PresenterPageProps> = ({
     }
   };
 
+  const handleReset = async () => {
+    const confirmed = window.confirm('คุณต้องการล้างข้อมูลคำตอบทั้งหมดใช่หรือไม่? การดำเนินการนี้จะลบข้อมูลออกจากฐานข้อมูลและรีเซ็ตการแสดงผลทั้งหมดทันที (ไม่สามารถกู้คืนได้)');
+    if (!confirmed) return;
+
+    try {
+      await resetPresenterData();
+      setResults({
+        totalSubmissions: 0,
+        words: [],
+        emojis: [
+          { id: 'love', count: 0 },
+          { id: 'wow', count: 0 },
+          { id: 'excited', count: 0 },
+          { id: 'fun', count: 0 },
+          { id: 'okay', count: 0 },
+          { id: 'bored', count: 0 },
+          { id: 'dissatisfied', count: 0 },
+          { id: 'angry', count: 0 },
+        ],
+        updatedAt: new Date().toISOString(),
+      });
+      alert('ล้างข้อมูลเรียบร้อยแล้ว');
+    } catch (err) {
+      alert('เกิดข้อผิดพลาดในการล้างข้อมูล');
+    }
+  };
+
   if (sessionLoading) {
     return (
       <div className="presenter-loading-screen">
@@ -137,6 +164,9 @@ export const PresenterPage: React.FC<PresenterPageProps> = ({
             </span>
           </div>
 
+          <button onClick={handleReset} className="presenter-reset-btn btn-capsule" style={{ marginRight: '8px' }}>
+            ล้างผลข้อมูล
+          </button>
           <button onClick={handleLogout} className="presenter-logout-btn btn-capsule">
             ออกจากระบบ
           </button>

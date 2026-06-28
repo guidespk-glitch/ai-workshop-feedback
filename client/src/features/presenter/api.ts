@@ -32,3 +32,15 @@ export async function logoutPresenter(): Promise<void> {
     throw new Error('Failed to logout');
   }
 }
+
+export async function resetPresenterData(): Promise<void> {
+  const response = await fetch('/api/presenter/reset', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to reset data');
+  }
+}

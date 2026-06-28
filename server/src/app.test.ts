@@ -33,6 +33,7 @@ describe('Express API App', () => {
   beforeEach(() => {
     submissionServiceMock = {
       submit: vi.fn(),
+      clearAllSubmissions: vi.fn(),
     };
     resultsServiceMock = {
       getResults: vi.fn().mockResolvedValue({
@@ -187,6 +188,40 @@ describe('Express API App', () => {
         .set('Origin', 'https://feedback.thatumdonruea.com');
       expect(sessionRes2.status).toBe(200);
       expect(sessionRes2.body).toEqual({ authenticated: false });
+    });
+
+    it('keeps reset endpoint private with 401', async () => {
+      const response = await request(app)
+        .post('/api/presenter/reset')
+        .set('Origin', 'https://feedback.thatumdonruea.com');
+      expect(response.status).toBe(401);
+    });
+
+    it('allows authorized presenter to reset data', async () => {
+      presenterAuthServiceMock.verify.mockResolvedValue(true);
+      submissionServiceMock.clearAllSubmissions.mockResolvedValue(undefined);
+      resultsServiceMock.getResults.mockResolvedValue({
+        totalSubmissions: 0,
+        words: [],
+        emojis: [],
+        updatedAt: '2026-06-28T05:00:00Z',
+      });
+
+      const agent = request.agent(app);
+
+      // login
+      await agent
+        .post('/api/presenter/login')
+        .set('Origin', 'https://feedback.thatumdonruea.com')
+        .send({ pin: '123456' });
+
+      // reset
+      const resetRes = await agent
+        .post('/api/presenter/reset')
+        .set('Origin', 'https://feedback.thatumdonruea.com');
+      expect(resetRes.status).toBe(200);
+      expect(resetRes.body).toEqual({ success: true, message: 'ล้างข้อมูลสำเร็จ' });
+      expect(submissionServiceMock.clearAllSubmissions).toHaveBeenCalled();
     });
   });
 });

@@ -13,4 +13,10 @@ export class SubmissionService {
     const tokenHash = createHash('sha256').update(participantToken).digest('hex');
     return this.repository.create(tokenHash, input);
   }
+
+  async clearAllSubmissions(): Promise<void> {
+    if ((this.repository as any).clearAll) {
+      await (this.repository as any).clearAll();
+    }
+  }
 }

@@ -95,4 +95,8 @@ export class SubmissionRepository {
       })),
     };
   }
+
+  async clearAll(): Promise<void> {
+    await this.pool.execute('DELETE FROM submissions');
+  }
 }

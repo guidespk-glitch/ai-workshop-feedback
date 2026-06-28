@@ -690,6 +690,18 @@ input:focus-visible {
   100% { opacity: 0.4; }
 }
 
+.presenter-reset-btn {
+  background-color: transparent;
+  border: 2px solid var(--error);
+  color: var(--error);
+  padding: 8px 20px;
+  font-size: 14px;
+}
+
+.presenter-reset-btn:hover {
+  background-color: #fee2e2;
+}
+
 .presenter-logout-btn {
   background-color: transparent;
   border: 2px solid var(--blue-600);
