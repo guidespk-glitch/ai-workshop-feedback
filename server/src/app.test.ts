@@ -35,7 +35,12 @@ describe('Express API App', () => {
       submit: vi.fn(),
     };
     resultsServiceMock = {
-      getResults: vi.fn(),
+      getResults: vi.fn().mockResolvedValue({
+        totalSubmissions: 0,
+        words: [],
+        emojis: [],
+        updatedAt: '2026-06-28T05:00:00Z',
+      }),
     };
     presenterAuthServiceMock = {
       verify: vi.fn(),

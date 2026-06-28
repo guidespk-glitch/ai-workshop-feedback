@@ -9,6 +9,7 @@ import { SubmissionService } from './services/submissionService';
 import { ResultsService } from './services/resultsService';
 import { PresenterAuthService } from './services/presenterAuthService';
 import { createApp } from './app';
+import { attachRealtime } from './realtime/realtimeGateway';
 
 const MySQLStore = MySQLStoreFactory(session as any);
 
@@ -41,18 +42,34 @@ async function startServer() {
     pool as any
   );
 
+  // Build the session middleware to share with HTTP and Socket.IO
+  const sessionMiddleware = session({
+    secret: config.sessionSecret,
+    resave: false,
+    saveUninitialized: false,
+    store: sessionStore,
+    name: 'presenter_sid',
+    cookie: {
+      httpOnly: true,
+      secure: config.nodeEnv === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    },
+  });
+
   const app = createApp({
     config,
     submissionService,
     resultsService,
     presenterAuthService,
-    sessionStore,
+    sessionMiddleware,
     dbPool: pool,
   });
 
   const httpServer = createServer(app);
 
-  // Note: Socket.IO attachment will happen here in Task 5
+  // Attach Socket.IO realtime server
+  attachRealtime(httpServer, sessionMiddleware, resultsService);
 
   httpServer.listen(config.port, () => {
     console.log(`Server is running on port ${config.port} in ${config.nodeEnv} mode`);

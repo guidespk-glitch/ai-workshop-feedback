@@ -10,6 +10,7 @@ import type { ResultsService } from './services/resultsService';
 import type { PresenterAuthService } from './services/presenterAuthService';
 import { originGuard } from './middleware/originGuard';
 import { createSubmissionSchema } from '../../shared/schemas';
+import { publishResults } from './realtime/realtimeGateway';
 
 interface AppDependencies {
   config: AppConfig;
@@ -17,6 +18,7 @@ interface AppDependencies {
   resultsService: ResultsService;
   presenterAuthService: PresenterAuthService;
   sessionStore?: session.Store;
+  sessionMiddleware?: express.RequestHandler;
   dbPool?: {
     execute(sql: string): Promise<any>;
   };
@@ -28,6 +30,7 @@ export function createApp({
   resultsService,
   presenterAuthService,
   sessionStore,
+  sessionMiddleware,
   dbPool,
 }: AppDependencies): express.Express {
   const app = express();
@@ -62,21 +65,20 @@ export function createApp({
   });
 
   // Session configuration
-  app.use(
-    session({
-      secret: config.sessionSecret,
-      resave: false,
-      saveUninitialized: false,
-      store: sessionStore, // Fallback to memory store if undefined
-      name: 'presenter_sid',
-      cookie: {
-        httpOnly: true,
-        secure: config.nodeEnv === 'production',
-        sameSite: 'strict',
-        maxAge: 24 * 60 * 60 * 1000, // 1 day
-      },
-    })
-  );
+  const sessionMiddlewareToUse = sessionMiddleware || session({
+    secret: config.sessionSecret,
+    resave: false,
+    saveUninitialized: false,
+    store: sessionStore, // Fallback to memory store if undefined
+    name: 'presenter_sid',
+    cookie: {
+      httpOnly: true,
+      secure: config.nodeEnv === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    },
+  });
+  app.use(sessionMiddlewareToUse);
 
   // Participant cookie generator middleware
   app.use((req, res, next) => {
@@ -127,6 +129,12 @@ export function createApp({
       }
 
       const result = await submissionService.submit(participantToken, parsed.data);
+
+      // Async fetch and broadcast updated results to presenter
+      resultsService.getResults()
+        .then((snapshot) => publishResults(snapshot))
+        .catch((err) => console.error('Failed to broadcast results:', err));
+
       res.status(201).json({ success: true, id: result.id });
     } catch (error: any) {
       if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('Duplicate entry')) {
