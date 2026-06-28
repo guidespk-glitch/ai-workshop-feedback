@@ -57,8 +57,8 @@ describe('PresenterPage', () => {
     expect(aiWord).toHaveStyle({ fontSize: '96px' }); // formula maps maxCount to 96px
 
     const creativeWord = screen.getByText('สร้างสรรค์');
-    // count 5 of max 20 should be: 20 + 76 * sqrt(5 / 20) = 20 + 76 * 0.5 = 58px
-    expect(creativeWord).toHaveStyle({ fontSize: '58px' });
+    // count 5 of max 20 should be: 28 + 68 * sqrt((5-1) / (20-1)) = 28 + 68 * sqrt(4/19) = 28 + 31.2 = 59px
+    expect(creativeWord).toHaveStyle({ fontSize: '59px' });
 
     // Verify emoji rankings & data-rank attribute
     // Max count is 20 for 'wow'

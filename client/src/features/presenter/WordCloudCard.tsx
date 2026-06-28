@@ -9,10 +9,18 @@ export const WordCloudCard: React.FC<WordCloudCardProps> = ({ words }) => {
   const maxCount = words.length > 0 ? Math.max(...words.map((w) => w.count)) : 0;
 
   const calculateWordSize = (count: number, max: number): number => {
-    if (max <= 0) return 20;
-    if (max === 1) return 96;
-    // Map scale from 20px to 96px using square root
-    return Math.round(20 + 76 * Math.sqrt(count / max));
+    const minSize = 28; // base size when a word is submitted 1 time
+    const maxSize = 96; // maximum size for the highest count word
+    
+    if (max <= 1) {
+      return minSize;
+    }
+    
+    // Scale count between 1 and max:
+    // When count is 1, it should return minSize.
+    // When count is max, it should return maxSize.
+    const ratio = (count - 1) / (max - 1);
+    return Math.round(minSize + (maxSize - minSize) * Math.sqrt(ratio));
   };
 
   const getWordColor = (word: string): string => {
