@@ -22,6 +22,11 @@ export const PresenterPage: React.FC<PresenterPageProps> = ({
   );
   const navigate = useNavigate();
 
+  // Set document title
+  useEffect(() => {
+    document.title = 'หน้าจอผู้นำเสนอ | สสวท.';
+  }, []);
+
   // Handle session check
   useEffect(() => {
     // Skip session check in testing environment if initialResults are supplied

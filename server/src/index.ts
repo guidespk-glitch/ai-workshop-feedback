@@ -13,34 +13,75 @@ import { attachRealtime } from './realtime/realtimeGateway';
 
 const MySQLStore = MySQLStoreFactory(session as any);
 
+class MockSubmissionRepository {
+  private submissions: Array<{ tokenHash: string; input: any }> = [];
+
+  async create(tokenHash: string, input: any) {
+    if (this.submissions.find((s) => s.tokenHash === tokenHash)) {
+      const err = new Error('Duplicate entry');
+      (err as any).code = 'ER_DUP_ENTRY';
+      throw err;
+    }
+    this.submissions.push({ tokenHash, input });
+    return { id: this.submissions.length };
+  }
+
+  async getAggregateSource() {
+    const totalSubmissions = this.submissions.length;
+    const answers = this.submissions.flatMap((s) => s.input.answers);
+    const emojiCountsMap: Record<string, number> = {};
+    for (const s of this.submissions) {
+      for (const e of s.input.emojis) {
+        emojiCountsMap[e] = (emojiCountsMap[e] || 0) + 1;
+      }
+    }
+    const emojiCounts = Object.entries(emojiCountsMap).map(([id, count]) => ({
+      id: id as any,
+      count,
+    }));
+    return {
+      totalSubmissions,
+      answers,
+      emojiCounts,
+    };
+  }
+}
+
 async function startServer() {
   const config = getAppConfig();
-  const pool = createDatabasePool(config.db);
+  const isMock = process.env.MOCK_DATABASE === 'true';
 
-  // Initialize repository and services
-  const repository = new SubmissionRepository(pool);
+  let pool: any = null;
+  let repository: any = null;
+  let sessionStore: any = undefined;
+
+  if (isMock) {
+    repository = new MockSubmissionRepository();
+  } else {
+    pool = createDatabasePool(config.db);
+    repository = new SubmissionRepository(pool);
+    sessionStore = new MySQLStore(
+      {
+        clearExpired: true,
+        checkExpirationInterval: 900000,
+        expiration: 86400000,
+        createDatabaseTable: false,
+        schema: {
+          tableName: 'presenter_sessions',
+          columnNames: {
+            session_id: 'session_id',
+            expires: 'expires',
+            data: 'data',
+          },
+        },
+      },
+      pool as any
+    );
+  }
+
   const submissionService = new SubmissionService(repository);
   const resultsService = new ResultsService(repository);
   const presenterAuthService = new PresenterAuthService(config.presenterPinHash);
-
-  // Initialize session store
-  const sessionStore = new MySQLStore(
-    {
-      clearExpired: true,
-      checkExpirationInterval: 900000, // 15 minutes
-      expiration: 86400000, // 1 day
-      createDatabaseTable: false, // Schema 001_initial.sql has presenter_sessions
-      schema: {
-        tableName: 'presenter_sessions',
-        columnNames: {
-          session_id: 'session_id',
-          expires: 'expires',
-          data: 'data',
-        },
-      },
-    },
-    pool as any
-  );
 
   // Build the session middleware to share with HTTP and Socket.IO
   const sessionMiddleware = session({
@@ -51,7 +92,7 @@ async function startServer() {
     name: 'presenter_sid',
     cookie: {
       httpOnly: true,
-      secure: config.nodeEnv === 'production',
+      secure: config.nodeEnv === 'production' && !isMock,
       sameSite: 'strict',
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     },
