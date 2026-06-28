@@ -45,6 +45,40 @@ export const ParticipantPage: React.FC = () => {
     }
   }, []);
 
+  // Poll server reset version to detect when presenter clears data
+  useEffect(() => {
+    let lastVersion: number | null = null;
+
+    const checkResetVersion = async () => {
+      try {
+        const res = await fetch('/api/reset-version');
+        if (res.ok) {
+          const data = await res.json();
+          if (lastVersion === null) {
+            // First check — just record the current version
+            lastVersion = data.version;
+          } else if (data.version !== lastVersion) {
+            // Version changed — presenter reset data, re-enable form
+            lastVersion = data.version;
+            sessionStorage.removeItem('workshop_submitted');
+            sessionStorage.removeItem('workshop_answers');
+            sessionStorage.removeItem('workshop_emojis');
+            setSubmitted(false);
+            setAnswers(['', '', '']);
+            setSelectedEmojis([]);
+            setErrorMsg('');
+          }
+        }
+      } catch {
+        // ignore network errors
+      }
+    };
+
+    checkResetVersion();
+    const interval = setInterval(checkResetVersion, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Save to sessionStorage when values change
   useEffect(() => {
     if (!submitted) {

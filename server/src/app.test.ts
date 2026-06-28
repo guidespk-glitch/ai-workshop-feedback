@@ -220,7 +220,7 @@ describe('Express API App', () => {
         .post('/api/presenter/reset')
         .set('Origin', 'https://feedback.thatumdonruea.com');
       expect(resetRes.status).toBe(200);
-      expect(resetRes.body).toEqual({ success: true, message: 'ล้างข้อมูลสำเร็จ' });
+      expect(resetRes.body).toEqual({ success: true, message: 'ล้างข้อมูลสำเร็จ', resetVersion: 1 });
       expect(submissionServiceMock.clearAllSubmissions).toHaveBeenCalled();
     });
   });

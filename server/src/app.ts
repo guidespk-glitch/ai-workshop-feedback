@@ -112,8 +112,16 @@ export function createApp({
     }
   });
 
+  // Reset version counter — increments each time presenter clears data
+  let resetVersion = 0;
+
   // Apply Origin guard to all /api routes
   app.use('/api', originGuard(config.appOrigin));
+
+  // Public endpoint for participants to check reset version
+  app.get('/api/reset-version', (_req, res) => {
+    res.json({ version: resetVersion });
+  });
 
   // Public submission endpoint
   app.post('/api/submissions', submissionLimiter, async (req, res) => {
@@ -216,9 +224,10 @@ export function createApp({
 
     try {
       await submissionService.clearAllSubmissions();
+      resetVersion++;
       const emptyResults = await resultsService.getResults();
       publishResults(emptyResults);
-      res.status(200).json({ success: true, message: 'ล้างข้อมูลสำเร็จ' });
+      res.status(200).json({ success: true, message: 'ล้างข้อมูลสำเร็จ', resetVersion });
     } catch (error) {
       console.error('Failed to reset submissions:', error);
       res.status(500).json({ error: 'เกิดข้อผิดพลาดในการล้างข้อมูล' });
