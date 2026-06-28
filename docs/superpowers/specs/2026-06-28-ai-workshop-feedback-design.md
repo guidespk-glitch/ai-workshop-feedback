@@ -20,7 +20,7 @@
 - แบบสอบถามภาษาไทยสำหรับผู้เข้าร่วม 1 หน้า
 - คำถามที่ 1: คำตอบสั้น 3 คำตอบ
 - คำถามที่ 2: เลือก Emoji ที่แตกต่างกันให้ครบ 2 อันจาก 8 ตัวเลือก
-- ส่งคำตอบได้หนึ่งครั้งต่อ Firebase Anonymous UID
+- ส่งคำตอบได้หนึ่งครั้งต่ออุปกรณ์/เบราว์เซอร์ด้วย participant token ในคุกกี้แบบ signed และ `HttpOnly`
 - หน้าผู้นำเสนอแบบเรียลไทม์
 - Word cloud ที่รวมคำตรงกัน คำพ้องที่กำหนด และคำสะกดใกล้เคียง
 - Emoji visualization ที่ขนาดสัมพันธ์กับจำนวนครั้งที่ถูกเลือก
@@ -113,7 +113,7 @@ Word cloud ใช้เฉดภายในสามกลุ่มนี้เ
 - ปุ่ม “ส่งคำตอบ” ใช้งานได้เมื่อข้อมูลถูกต้องครบถ้วน
 - ระหว่างส่ง ปุ่มถูกล็อกและแสดงสถานะกำลังส่ง
 - การส่งสำเร็จเปลี่ยนเป็นหน้าขอบคุณ และไม่เปิดแบบฟอร์มอีกในเซสชันเดิม
-- หากส่งซ้ำด้วย UID เดิม Firestore ปฏิเสธการสร้างเอกสารซ้ำและ UI แสดงว่าเคยส่งแล้ว
+- หากส่งซ้ำด้วย participant token เดิม MariaDB ปฏิเสธด้วย unique constraint และ UI แสดงว่าเคยส่งแล้ว
 - หากเครือข่ายขัดข้อง เก็บค่าฟอร์มไว้ในหน่วยความจำและ `sessionStorage`
   พร้อมปุ่มลองส่งใหม่ โดยไม่สร้างข้อมูลซ้ำ
 
@@ -122,17 +122,17 @@ Word cloud ใช้เฉดภายในสามกลุ่มนี้เ
 - โลโก้ สสวท. บนหน้าผู้เข้าร่วมเป็นจุดเปิดทางลับ
 - ต้องแตะ 5 ครั้งภายในช่วงเวลา 3 วินาที
 - เมื่อครบ เปิด modal กรอก PIN โดยไม่บอกใบ้ทางลับบนหน้าปกติ
-- PIN ทำหน้าที่เป็นรหัสผ่านของบัญชี Firebase Authentication สำหรับผู้นำเสนอ
-- PIN ต้องมีอย่างน้อย 6 หลักตามข้อกำหนดรหัสผ่านของ Firebase และควรเปลี่ยนก่อนกิจกรรมแต่ละครั้ง
-- ฝั่ง client รู้เพียงอีเมลบัญชีผู้นำเสนอที่ใช้เข้าสู่ระบบอัตโนมัติ
-  แต่อีเมลดังกล่าวไม่ถือเป็นความลับ
-- บัญชีผู้นำเสนอได้รับ custom claim `role: presenter` ผ่านสคริปต์ตั้งค่าครั้งเดียว
-- Firestore Security Rules อนุญาตอ่านคำตอบเฉพาะบัญชีที่มี claim ดังกล่าว
+- PIN ต้องมีอย่างน้อย 6 หลัก เก็บเฉพาะ Argon2id hash ใน environment variable ของ Plesk
+  และควรเปลี่ยนก่อนกิจกรรมแต่ละครั้ง
+- Server ตรวจ PIN ด้วยเวลาคงที่เท่าที่ไลบรารีรองรับ และจำกัดจำนวนครั้งที่ลองต่อช่วงเวลา
+- เมื่อสำเร็จ Server สร้าง presenter session ใน MariaDB และส่ง session cookie แบบ
+  `HttpOnly`, `Secure` และ `SameSite=Strict`
+- REST API และ Socket.IO ตรวจ presenter session ก่อนคืนผลลัพธ์หรือเข้าห้อง realtime
 - เมื่อยืนยันสำเร็จนำไปที่ `/presenter`; เมื่อออกจากระบบกลับไป `/`
 - การเข้าที่ `/presenter` โดยไม่มีสิทธิ์ต้องกลับไป `/` และไม่เปิดเผยข้อมูลผลลัพธ์
 
-หมายเหตุ: ทางลับช่วยซ่อนหน้าจอจากผู้ใช้ทั่วไป ส่วนความปลอดภัยจริงมาจาก Firebase
-Authentication และ Firestore Security Rules ไม่ใช่การซ่อน URL
+หมายเหตุ: ทางลับช่วยซ่อนหน้าจอจากผู้ใช้ทั่วไป ส่วนความปลอดภัยจริงมาจากการตรวจ PIN
+ฝั่ง Node.js, session และการจำกัดสิทธิ์ API/Socket.IO ไม่ใช่การซ่อน URL
 
 ## 6. ประสบการณ์ฝั่งผู้นำเสนอ
 
@@ -172,7 +172,7 @@ Authentication และ Firestore Security Rules ไม่ใช่การซ
 ## 7. การรวมคำสำหรับ Word cloud
 
 การรวมคำเกิดใน client ฝั่งผู้นำเสนอจากชุดคำตอบที่ได้รับแบบเรียลไทม์
-โดยใช้โมดูลบริสุทธิ์ที่ทดสอบแยกได้ และไม่แก้ข้อมูลต้นฉบับใน Firestore
+โดยใช้โมดูลบริสุทธิ์ฝั่ง Node.js ที่ทดสอบแยกได้ และไม่แก้ข้อมูลต้นฉบับใน MariaDB
 
 ลำดับการประมวลผล:
 
@@ -196,17 +196,22 @@ Authentication และ Firestore Security Rules ไม่ใช่การซ
 
 - React + TypeScript + Vite
 - React Router สำหรับ `/` และ `/presenter`
-- Firebase Web SDK สำหรับ Authentication และ Cloud Firestore
+- REST API สำหรับส่งคำตอบ เข้าสู่ระบบ และดึงผลเริ่มต้น
+- Socket.IO client สำหรับรับผลรวมแบบเรียลไทม์
 - CSS Modules หรือไฟล์ style ที่แยกตามองค์ประกอบ พร้อม design tokens ส่วนกลาง
 - Word cloud ใช้ layout แบบ deterministic และรองรับฟอนต์ภาษาไทย
 
-### Firebase
+### Backend และฐานข้อมูล
 
-- Firebase Anonymous Authentication สำหรับผู้เข้าร่วม
-- Firebase Email/Password Authentication สำหรับผู้นำเสนอ
-- Cloud Firestore สำหรับคำตอบ
-- Firebase Hosting สำหรับเผยแพร่เว็บ
-- Firestore Security Rules จำกัดสิทธิ์สร้างและอ่านข้อมูล
+- Node.js รุ่น LTS ที่มีใน Plesk โดยกำหนด `engines.node` ให้ตรงกับเวอร์ชันที่ใช้งานจริง
+- Express สำหรับ REST API และให้บริการไฟล์ React production build
+- Socket.IO สำหรับ realtime โดยเปิด WebSocket และ long-polling fallback
+- MariaDB connection pool พร้อม prepared statements
+- Transaction ครอบการสร้าง submission, คำตอบ 3 ค่า และ Emoji 2 ค่า
+- `express-session` ร่วมกับ MariaDB session store สำหรับ presenter session
+- Argon2id สำหรับตรวจ PIN; Helmet, origin checks และ rate limiting สำหรับ hardening
+- Process ฟังพอร์ตจาก `process.env.PORT` เพื่อทำงานหลัง reverse proxy ของ Plesk
+- Production URL คือ `https://feedback.thatumdonruea.com`
 
 ### ขอบเขตโมดูล
 
@@ -214,18 +219,20 @@ Authentication และ Firestore Security Rules ไม่ใช่การซ
 - `AnswerFields`: ควบคุมและตรวจคำตอบ 3 ช่อง
 - `EmojiPicker`: ควบคุมการเลือก 2 จาก 8 รายการ
 - `SecretPresenterAccess`: ตรวจการแตะโลโก้ เปิด PIN modal และเข้าสู่ระบบ
-- `PresenterPage`: สมัครรับข้อมูลและจัด layout ผลลัพธ์
-- `WordCloudCard`: รวมคำ คำนวณน้ำหนัก และวาด Word cloud
-- `EmojiResultsCard`: รวมจำนวน จัดอันดับ และคำนวณขนาด Emoji
-- `submissionRepository`: ติดต่อ Firestore โดยไม่ผูก UI กับฐานข้อมูล
+- `PresenterPage`: โหลดผลเริ่มต้น สมัครรับ Socket.IO และจัด layout ผลลัพธ์
+- `WordCloudCard`: รับผลรวมที่ Server เตรียมแล้ว คำนวณ layout และวาด Word cloud
+- `EmojiResultsCard`: รับจำนวนรวม จัดอันดับ และคำนวณขนาด Emoji สำหรับการแสดงผล
+- `submissionRepository`: ติดต่อ REST API โดยไม่ผูก UI กับรายละเอียด transport
 - `wordNormalizer`: normalize, alias และ fuzzy grouping แบบ pure functions
-- `authService`: anonymous sign-in, presenter sign-in และ sign-out
+- `presenterAuthService`: presenter sign-in, session check และ sign-out
+- `submissionService`: validate และบันทึก submission ภายใน MariaDB transaction
+- `resultsService`: รวมคำและนับ Emoji แล้วคืน aggregate DTO เดียวกันให้ REST และ Socket.IO
+- `realtimeGateway`: ตรวจ session และกระจายเฉพาะผลรวมไปยัง presenter room
 
 ## 9. แบบจำลองข้อมูล
 
-Collection: `submissions`
-
-Document ID เท่ากับ Firebase UID ของผู้เข้าร่วม เพื่อบังคับหนึ่งคำตอบต่อ UID
+MariaDB ใช้ตารางที่ normalize เพื่อบังคับจำนวนคำตอบและ Emoji ด้วย key/constraint
+พร้อม transaction เดียวต่อหนึ่ง submission
 
 ```ts
 type EmojiId =
@@ -238,56 +245,66 @@ type EmojiId =
   | 'dissatisfied'
   | 'angry';
 
-interface Submission {
+interface CreateSubmissionRequest {
   answers: [string, string, string];
   emojis: [EmojiId, EmojiId];
-  createdAt: FirebaseFirestore.Timestamp;
-  schemaVersion: 1;
 }
 ```
 
-ข้อบังคับใน Security Rules:
+ตารางหลัก:
 
-- ผู้เข้าร่วมต้อง authenticated แบบ anonymous
-- `sign_in_provider` ของผู้เข้าร่วมต้องเป็น `anonymous`
-- สร้างได้เฉพาะเอกสารที่ ID ตรงกับ `request.auth.uid`
-- สร้างได้ครั้งเดียว; ห้าม update และ delete
-- `answers` ต้องมี 3 ค่า เป็น string และแต่ละค่ายาวไม่เกิน 40 ตัวอักษร
-- `emojis` ต้องมี 2 ค่า แตกต่างกัน และอยู่ในรายการที่อนุญาต
-- `createdAt` ต้องเท่ากับ `request.time` ตาม Firestore Security Rules
-- ผู้เข้าร่วมไม่มีสิทธิ์อ่าน collection
-- บัญชีที่มี `role: presenter` อ่านได้ แต่แก้ไขหรือลบไม่ได้
+- `submissions`: `id`, `participant_token_hash` (unique), `created_at`, `schema_version`
+- `submission_answers`: `submission_id`, `answer_index`, `answer_text` โดยมี
+  unique key `(submission_id, answer_index)`
+- `emoji_options`: รายการรหัส Emoji ที่อนุญาต 8 ค่า
+- `submission_emojis`: `submission_id`, `emoji_id` โดยมี primary key คู่
+  เพื่อห้าม Emoji ซ้ำใน submission เดียว
+- `presenter_sessions`: จัดเก็บ session ตาม adapter ของ `express-session`
+
+กติกาฝั่ง Server และฐานข้อมูล:
+
+- participant token เป็น random 256-bit value; เก็บใน browser เป็น signed `HttpOnly` cookie
+  และเก็บในฐานข้อมูลเฉพาะ SHA-256 hash
+- participant token หนึ่งค่าเชื่อมกับ submission ได้เพียงหนึ่งรายการ
+- `answers` ต้องมี 3 ค่า เป็น string และแต่ละค่ายาว 1–40 ตัวอักษรหลัง normalize
+- `emojis` ต้องมี 2 ค่า แตกต่างกัน และมีอยู่ใน `emoji_options`
+- Server เป็นผู้กำหนด `created_at`; client ไม่สามารถส่งเวลามาแทนได้
+- API สาธารณะอนุญาตเฉพาะการสร้าง submission และไม่คืนข้อมูลของผู้ตอบรายอื่น
+- API ผลลัพธ์และ Socket.IO presenter room ต้องมี session ที่ยังไม่หมดอายุ
 
 ## 10. การไหลของข้อมูล
 
-1. ผู้เข้าร่วมเปิดเว็บและระบบ sign in แบบ anonymous
+1. ผู้เข้าร่วมเปิดเว็บ; Server สร้าง participant token cookie หากยังไม่มี
 2. ผู้เข้าร่วมกรอก 3 คำตอบและเลือก Emoji 2 รายการ
 3. Client ตรวจรูปแบบก่อนส่ง
-4. `submissionRepository` สร้างเอกสาร `submissions/{uid}` ด้วย server timestamp
-5. Firestore Rules ตรวจความถูกต้องและปฏิเสธข้อมูลซ้ำหรือผิดรูปแบบ
-6. หน้าผู้นำเสนอที่ผ่านการยืนยันรับ snapshot ใหม่แบบเรียลไทม์
-7. Client รวมคำและนับ Emoji จาก snapshot เดียวกัน
-8. Word cloud และ Emoji visualization อัปเดตด้วย animation แบบนุ่มนวล
+4. `submissionRepository` ส่ง `POST /api/submissions`
+5. Node.js ตรวจ payload, participant token และ rate limit แล้วบันทึกทุกตารางใน transaction
+6. หลัง commit สำเร็จ `resultsService` คำนวณผลรวมล่าสุด
+7. `realtimeGateway` ส่ง event `results:update` เฉพาะ presenter room
+8. หน้าผู้นำเสนออัปเดต Word cloud และ Emoji visualization ด้วย animation แบบนุ่มนวล
+9. หาก Socket.IO reconnect จะเรียก `GET /api/presenter/results` เพื่อ resync ก่อนรับ event ต่อ
 
 ## 11. การจัดการข้อผิดพลาด
 
-- Authentication ล้มเหลว: แสดงข้อความให้ลองใหม่และไม่เปิดแบบฟอร์มที่ส่งไม่ได้
+- Server/session ล้มเหลว: แสดงข้อความให้ลองใหม่และไม่เปิดเผยผลลัพธ์
 - PIN ผิด: แสดงข้อความทั่วไป ไม่ระบุว่าบัญชีหรือรหัสส่วนใดผิด และล็อกปุ่มชั่วคราวหลังผิดซ้ำ
-- Firestore permission denied: แสดงข้อความไม่มีสิทธิ์และนำออกจากหน้าผู้นำเสนอ
+- API ตอบ `401/403`: แสดงข้อความไม่มีสิทธิ์และนำออกจากหน้าผู้นำเสนอ
 - Submission already exists: แสดงหน้าขอบคุณว่าอุปกรณ์นี้ส่งแล้ว
 - Network unavailable: คงค่าฟอร์ม แสดงแถบสถานะ offline และให้ลองใหม่
-- Real-time listener หลุด: คงผลล่าสุดไว้ แสดงสถานะ “กำลังเชื่อมต่อใหม่” และสมัครรับข้อมูลใหม่
+- Socket.IO หลุด: คงผลล่าสุดไว้ แสดงสถานะ “กำลังเชื่อมต่อใหม่” และ resync เมื่อเชื่อมต่อได้
+- MariaDB ล้มเหลวระหว่างส่ง: rollback transaction ทั้งหมดและคืนข้อความให้ลองใหม่
 - Word cloud layout ล้มเหลว: fallback เป็นรายการคำเรียงตามจำนวน เพื่อไม่ให้ผลลัพธ์หายทั้งหมด
-- ข้อมูลเอกสารใดผิด schema: ข้ามเฉพาะเอกสารนั้นและบันทึก warning โดยหน้า presenter ยังทำงานต่อ
+- แถวข้อมูลใดผิด schema: ข้ามเฉพาะ submission นั้นและบันทึก warning โดยหน้า presenter ยังทำงานต่อ
 
 ## 12. ความเป็นส่วนตัวและความปลอดภัย
 
 - ไม่เก็บชื่อ อีเมล หมายเลขโทรศัพท์ IP หรือข้อมูลระบุตัวบุคคลในเอกสารคำตอบ
-- ใช้ UID เฉพาะเพื่อป้องกันการส่งซ้ำ และไม่แสดง UID บน UI
-- จำกัดการอ่านข้อมูลดิบให้บัญชีผู้นำเสนอ
-- ไม่เก็บ PIN ใน source code, localStorage หรือ Firestore
-- ใช้ environment configuration สำหรับ Firebase public config และอีเมลบัญชีผู้นำเสนอ
-- custom claim ถูกตั้งด้วย Firebase Admin SDK ผ่านสคริปต์ที่ไม่รวม credential ใน repository
+- ใช้ participant token hash เพื่อป้องกันการส่งซ้ำ และไม่แสดง token บน UI
+- หน้า presenter ได้รับเฉพาะผลรวม; API ไม่ส่ง participant token หรือ session record ไปยัง client
+- ไม่เก็บ PIN ใน source code, localStorage หรือ MariaDB; เก็บเฉพาะ Argon2id hash ใน Plesk environment
+- เก็บรหัส MariaDB, session secret และค่าอ่อนไหวทั้งหมดใน Plesk environment variables
+- บังคับ HTTPS, secure cookies, same-origin checks และ security headers ใน production
+- จำกัด login และ submission rate โดยไม่บันทึก IP ลงตารางคำตอบ
 - README ต้องอธิบายการตั้ง PIN และการหมุนรหัสผ่านก่อนนำไปใช้งานจริง
 
 ## 13. การทดสอบและเกณฑ์ยอมรับ
@@ -308,19 +325,21 @@ interface Submission {
 - ข้อมูลไม่ครบแล้วส่งไม่ได้ พร้อมข้อความชัดเจน
 - การเลือกตัวที่สามไม่ทำให้ตัวเลือกเดิมหายโดยไม่ตั้งใจ
 - ส่งสำเร็จแล้วเห็นหน้าขอบคุณ
-- Firestore ตอบว่ามีเอกสารแล้วและ UI แสดงสถานะเคยส่ง
+- API ตอบ conflict เมื่อ token ซ้ำและ UI แสดงสถานะเคยส่ง
 - PIN modal เปิดเฉพาะเมื่อแตะครบตามเงื่อนไข
 - ผู้ไม่มีสิทธิ์เปิด `/presenter` ไม่เห็นข้อมูล
-- snapshot ใหม่ทำให้ Word cloud และ Emoji results อัปเดต
-- listener error แสดงสถานะและคงผลล่าสุด
+- Socket.IO event ใหม่ทำให้ Word cloud และ Emoji results อัปเดต
+- Socket disconnect แสดงสถานะ คงผลล่าสุด และ resync หลัง reconnect
 
-### Security Rules tests
+### API, database และ security tests
 
-- anonymous user สร้างเอกสารของ UID ตนเองได้ครั้งเดียว
-- anonymous user อ่าน แก้ไข ลบ หรือสร้างแทน UID อื่นไม่ได้
+- participant token เดิมสร้าง submission ได้ครั้งเดียวและ transaction ไม่ทิ้งข้อมูลครึ่งชุด
+- API สาธารณะอ่าน แก้ไข หรือลบ submission ไม่ได้
 - payload ที่จำนวนคำตอบ/Emoji ผิดหรือ Emoji ซ้ำถูกปฏิเสธ
-- presenter อ่านได้ แต่เขียนหรือ delete ไม่ได้
-- authenticated user ที่ไม่มี claim presenter อ่านไม่ได้
+- unique/FK constraints ป้องกัน token ซ้ำ, answer index ซ้ำ และ Emoji ที่ไม่อนุญาต
+- PIN ที่ถูกต้องสร้าง presenter session; PIN ผิดและการลองถี่เกินไปถูกปฏิเสธ
+- session หมดอายุหรือ cookie ถูกแก้ไขแล้ว REST results และ Socket.IO ถูกปฏิเสธ
+- presenter อ่าน aggregate ได้ แต่ไม่มี endpoint สำหรับแก้ไขหรือลบคำตอบ
 
 ### Visual and browser acceptance
 
@@ -332,14 +351,23 @@ interface Submission {
 - สีข้อความสำคัญผ่าน WCAG AA
 - เมื่อ `prefers-reduced-motion` ทำงาน การเคลื่อนไหวที่ไม่จำเป็นถูกปิด
 
-## 14. การเผยแพร่
+## 14. การเผยแพร่บน Plesk
 
-- มี `.env.example` ระบุ Firebase configuration ที่ต้องกรอก
-- มีขั้นตอนสร้าง Firebase project, เปิด Authentication providers, สร้างบัญชีผู้นำเสนอ,
-  ตั้ง custom claim และ deploy Firestore Rules
-- มี seed script สำหรับข้อมูลสาธิตที่ทำงานเฉพาะ emulator
-- ใช้ Firebase Emulator Suite สำหรับทดสอบในเครื่อง
-- production deploy ไป Firebase Hosting และใช้ HTTPS
+- Production URL: `https://feedback.thatumdonruea.com`
+- Application root ชี้ไปที่โฟลเดอร์โปรเจกต์ และ document root ชี้ไปที่ React production build
+- Application startup file คือ `server.js` ที่ root และต้องฟัง `process.env.PORT`
+- Plesk เลือก Node.js LTS, Production mode และรัน install dependencies ตาม `package-lock.json`
+- `.env.example` ระบุชื่อ environment variables โดยไม่มี secret จริง
+- Plesk environment กำหนด `NODE_ENV`, `DATABASE_HOST`, `DATABASE_PORT`,
+  `DATABASE_NAME`, `DATABASE_USER`, `DATABASE_PASSWORD`, `SESSION_SECRET`,
+  `PRESENTER_PIN_HASH` และ `APP_ORIGIN=https://feedback.thatumdonruea.com`
+- มี SQL migration สำหรับสร้างตาราง, index, foreign keys และ seed `emoji_options`
+- มี seed script สำหรับข้อมูลสาธิตที่ทำงานเฉพาะ development/test database
+- เปิด SSL/TLS ของ subdomain และบังคับ redirect จาก HTTP เป็น HTTPS ก่อนเปิดใช้งาน
+- Socket.IO ใช้ WebSocket เมื่อ proxy รองรับ และ fallback เป็น long-polling โดยอัตโนมัติ
+- มี health endpoint สำหรับตรวจ Node.js และ MariaDB โดยไม่เปิดเผย secret
+- README อธิบายการ upload หรือ deploy ผ่าน Plesk Git, การตั้ง application root/document root,
+  การรัน migration, environment variables, restart และการตรวจ logs
 - ก่อนใช้งานจริงต้องทดสอบการตอบพร้อมกันหลายเบราว์เซอร์และจอ presenter อย่างน้อยหนึ่งรอบ
 
 ## 15. นิยามความสำเร็จ
