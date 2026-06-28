@@ -541,6 +541,323 @@ input:focus-visible {
   box-shadow: none;
 }
 
+/* Presenter Dashboard Styles */
+.presenter-loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 16px;
+  color: var(--blue-900);
+  font-weight: 600;
+}
+
+.loading-spinner-circle {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--blue-100);
+  border-top: 4px solid var(--blue-600);
+  border-radius: var(--radius-full);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.presenter-dashboard-layout {
+  padding: 32px;
+  max-width: 1440px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-height: 100vh;
+}
+
+.presenter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--surface);
+  padding: 20px 32px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(11, 53, 111, 0.04);
+}
+
+.presenter-header-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.presenter-logo {
+  height: 56px;
+}
+
+.presenter-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--blue-900);
+  margin-bottom: 4px;
+}
+
+.presenter-training {
+  font-size: 13px;
+  color: var(--neutral-500);
+  font-weight: 500;
+}
+
+.presenter-header-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--neutral-100);
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid var(--neutral-200);
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  display: inline-block;
+}
+
+.status-connected .status-dot {
+  background-color: var(--success);
+  box-shadow: 0 0 8px var(--success);
+}
+
+.status-reconnecting .status-dot {
+  background-color: var(--yellow-400);
+  box-shadow: 0 0 8px var(--yellow-400);
+  animation: pulse 1.5s infinite;
+}
+
+.status-disconnected .status-dot {
+  background-color: var(--error);
+  box-shadow: 0 0 8px var(--error);
+}
+
+@keyframes pulse {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+
+.presenter-logout-btn {
+  background-color: transparent;
+  border: 2px solid var(--blue-600);
+  color: var(--blue-600);
+  padding: 8px 20px;
+  font-size: 14px;
+}
+
+.presenter-logout-btn:hover {
+  background-color: var(--blue-100);
+}
+
+.connection-warning-banner {
+  background-color: #fee2e2;
+  color: var(--error);
+  padding: 12px;
+  border-radius: var(--radius-md);
+  text-align: center;
+  font-weight: 700;
+  font-size: 14px;
+  border: 1px solid #fca5a5;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.presenter-total-submissions-badge {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--blue-900);
+  background-color: var(--blue-100);
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  border-left: 5px solid var(--blue-600);
+  align-self: flex-start;
+}
+
+.presenter-content-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+}
+
+@media (min-width: 1024px) {
+  .presenter-content-grid {
+    grid-template-columns: 3fr 2fr;
+  }
+}
+
+.presenter-card {
+  background-color: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(11, 53, 111, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-height: 500px;
+}
+
+.presenter-card-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--blue-900);
+  border-bottom: 2px solid var(--neutral-100);
+  padding-bottom: 12px;
+}
+
+/* Word Cloud Styles */
+.word-cloud-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
+  gap: 16px 24px;
+  padding: 20px;
+  min-height: 380px;
+}
+
+.word-cloud-item {
+  display: inline-block;
+  white-space: nowrap;
+  line-height: 1.1;
+  padding: 4px 8px;
+  border-radius: var(--radius-md);
+  background-color: rgba(25, 118, 223, 0.02);
+  transition: all 0.3s ease;
+}
+
+.word-cloud-item:hover {
+  background-color: rgba(25, 118, 223, 0.06);
+  transform: scale(1.05);
+}
+
+.empty-results-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 16px;
+  min-height: 380px;
+}
+
+.empty-results-message {
+  color: var(--neutral-500);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* Emoji Result Styles */
+.emoji-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.emoji-result-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background-color: var(--neutral-100);
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+}
+
+.emoji-result-item[data-rank="1"] {
+  background-color: var(--blue-100);
+  border-color: rgba(25, 118, 223, 0.15);
+}
+
+.emoji-result-rank-badge {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--surface);
+  background-color: var(--blue-900);
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.emoji-result-item[data-rank="1"] .emoji-result-rank-badge {
+  background-color: var(--blue-600);
+}
+
+.emoji-result-graphic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  flex-shrink: 0;
+}
+
+.emoji-result-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-grow: 1;
+}
+
+.emoji-result-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--neutral-900);
+}
+
+.emoji-result-progress-bar-container {
+  background-color: var(--neutral-200);
+  height: 8px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  width: 100%;
+}
+
+.emoji-result-progress-bar {
+  background-color: var(--blue-600);
+  height: 100%;
+  border-radius: var(--radius-full);
+}
+
+.emoji-result-item[data-rank="1"] .emoji-result-progress-bar {
+  background-color: var(--blue-900);
+}
+
+.emoji-result-count {
+  font-size: 14px;
+  color: var(--neutral-500);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.emoji-result-count strong {
+  font-size: 16px;
+  color: var(--neutral-900);
+}
+
 /* Reduced Motion Override */
 @media (prefers-reduced-motion: reduce) {
   * {
