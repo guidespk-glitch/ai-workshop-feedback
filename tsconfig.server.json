@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": false,
+    "outDir": "./dist/server",
+    "rootDir": "."
+  },
+  "include": [
+    "server/src/**/*",
+    "shared/**/*"
+  ],
+  "exclude": [
+    "server/src/**/*.test.ts",
+    "server/src/**/*.spec.ts",
+    "shared/**/*.test.ts"
+  ]
+}

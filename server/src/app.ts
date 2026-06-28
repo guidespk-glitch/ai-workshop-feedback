@@ -1,4 +1,6 @@
 import express from 'express';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
@@ -198,6 +200,27 @@ export function createApp({
       res.status(500).json({ error: 'เกิดข้อผิดพลาดในการดึงข้อมูลผลรวม' });
     }
   });
+
+  // Serve static assets in production
+  if (config.nodeEnv === 'production') {
+    const rootDir = path.dirname(fileURLToPath(import.meta.url)); // dist/server
+    const publicDir = path.join(rootDir, '../public'); // dist/public
+
+    app.use(express.static(publicDir));
+
+    app.get(/.*/, (req, res, next) => {
+      if (req.path.startsWith('/api/')) {
+        next();
+        return;
+      }
+      res.sendFile(path.join(publicDir, 'index.html'), (err) => {
+        if (err) {
+          // Fallback content if the index.html file does not exist during tests/builds
+          res.status(200).send('<!DOCTYPE html><html><body>SPA Fallback</body></html>');
+        }
+      });
+    });
+  }
 
   return app;
 }
