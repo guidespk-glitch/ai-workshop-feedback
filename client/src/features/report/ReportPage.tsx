@@ -198,7 +198,7 @@ function WordCloudReportCard({ report }: { report: ReturnType<typeof buildReport
   const maxCount = report.words.length > 0 ? Math.max(...report.words.map((item) => item.count)) : 0;
 
   const displayedWords = useMemo(() => {
-    const sorted = [...report.words].sort((a, b) => b.count - a.count).slice(0, 45);
+    const sorted = [...report.words].sort((a, b) => b.count - a.count);
     const left: typeof sorted = [];
     const right: typeof sorted = [];
     
@@ -211,6 +211,21 @@ function WordCloudReportCard({ report }: { report: ReturnType<typeof buildReport
     }
     return [...left, ...right];
   }, [report.words]);
+
+  const { minFontSize, maxFontSize } = useMemo(() => {
+    const count = displayedWords.length;
+    if (count <= 10) {
+      return { minFontSize: 18, maxFontSize: 44 };
+    } else if (count <= 25) {
+      return { minFontSize: 14, maxFontSize: 36 };
+    } else if (count <= 50) {
+      return { minFontSize: 10, maxFontSize: 24 };
+    } else if (count <= 100) {
+      return { minFontSize: 8, maxFontSize: 18 };
+    } else {
+      return { minFontSize: 7, maxFontSize: 13 };
+    }
+  }, [displayedWords.length]);
 
   return (
     <article className="report-card report-word-card">
@@ -230,8 +245,7 @@ function WordCloudReportCard({ report }: { report: ReturnType<typeof buildReport
           <div className="report-word-cloud">
             {displayedWords.map((item, index) => {
               const ratio = maxCount > 0 ? item.count / maxCount : 0;
-              // Size scaling clamped between 10px and 34px to fit up to 45 words beautifully inside the fixed card
-              const fontSize = Math.round(10 + Math.sqrt(ratio) * 24);
+              const fontSize = Math.round(minFontSize + Math.sqrt(ratio) * (maxFontSize - minFontSize));
 
               return (
                 <span
