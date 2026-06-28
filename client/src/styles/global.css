@@ -729,6 +729,22 @@ input:focus-visible {
   100% { opacity: 0.4; }
 }
 
+.presenter-report-btn {
+  color: #0b2f63;
+  background: #ffffff;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.12);
+  padding: 8px 20px;
+  font-size: 14px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.presenter-report-btn:hover {
+  transform: translateY(-1px);
+  background: #eff6ff;
+}
+
 .presenter-reset-btn {
   background-color: transparent;
   border: 2px solid var(--error);

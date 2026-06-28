@@ -179,6 +179,14 @@ export const PresenterPage: React.FC<PresenterPageProps> = ({
             </span>
           </div>
 
+          <button
+            onClick={() => navigate('/report')}
+            className="presenter-report-btn btn-capsule"
+            style={{ marginRight: '8px' }}
+          >
+            📊 Report
+          </button>
+
           <button onClick={handleReset} className="presenter-reset-btn btn-capsule" style={{ marginRight: '8px' }}>
             ล้างผลข้อมูล
           </button>
