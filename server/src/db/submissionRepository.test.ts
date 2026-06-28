@@ -11,18 +11,33 @@ function createDatabaseDouble(failAtExecute?: number) {
   const events: string[] = [];
   let executeCount = 0;
   const connection = {
-    beginTransaction: vi.fn(async () => events.push('begin')),
-    execute: vi.fn(async () => {
+    beginTransaction: vi.fn(async () => {
+      events.push('begin');
+      return undefined;
+    }),
+    execute: vi.fn(async (sql: string, values?: any) => {
       executeCount += 1;
       events.push(`execute:${executeCount}`);
       if (executeCount === failAtExecute) throw new Error('database write failed');
-      return executeCount === 1 ? [{ insertId: 42 }] : [{}];
+      return (executeCount === 1 ? [{ insertId: 42 }] : [[]]) as any;
     }),
-    commit: vi.fn(async () => events.push('commit')),
-    rollback: vi.fn(async () => events.push('rollback')),
-    release: vi.fn(() => events.push('release')),
+    commit: vi.fn(async () => {
+      events.push('commit');
+      return undefined;
+    }),
+    rollback: vi.fn(async () => {
+      events.push('rollback');
+      return undefined;
+    }),
+    release: vi.fn(() => {
+      events.push('release');
+      return undefined;
+    }),
   };
-  const pool = { getConnection: vi.fn(async () => connection) };
+  const pool = {
+    getConnection: vi.fn(async () => connection as any),
+    execute: vi.fn(async (sql: string, values?: any) => [[]] as any),
+  };
   return { pool, connection, events };
 }
 

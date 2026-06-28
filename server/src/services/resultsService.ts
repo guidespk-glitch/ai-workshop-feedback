@@ -18,3 +18,12 @@ export function buildResults(source: AggregateSource, now = new Date()): Results
     updatedAt: now.toISOString(),
   };
 }
+
+export class ResultsService {
+  constructor(private readonly repository: { getAggregateSource(): Promise<AggregateSource> }) {}
+
+  async getResults(): Promise<ResultsSnapshot> {
+    const source = await this.repository.getAggregateSource();
+    return buildResults(source);
+  }
+}

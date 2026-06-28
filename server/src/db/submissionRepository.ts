@@ -5,7 +5,7 @@ import type { AggregateSource } from '../services/resultsService';
 
 export interface DatabaseConnection {
   beginTransaction(): Promise<unknown>;
-  execute(sql: string, values?: readonly unknown[]): Promise<readonly unknown[]>;
+  execute(sql: string, values?: any[]): Promise<any>;
   commit(): Promise<unknown>;
   rollback(): Promise<unknown>;
   release(): unknown;
@@ -13,7 +13,7 @@ export interface DatabaseConnection {
 
 export interface DatabasePool {
   getConnection(): Promise<DatabaseConnection>;
-  execute(sql: string, values?: readonly unknown[]): Promise<readonly unknown[]>;
+  execute(sql: string, values?: any[]): Promise<any>;
 }
 
 interface CountRow extends RowDataPacket {
