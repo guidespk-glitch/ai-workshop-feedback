@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" width="200" height="80">
+  <!-- Styled modern representation of IPST / สสวท. Logo -->
+  <g transform="translate(10, 10)">
+    <!-- Scientific/Atom Rings -->
+    <ellipse cx="30" cy="30" rx="25" ry="10" fill="none" stroke="#1976df" stroke-width="2" transform="rotate(-30, 30, 30)" />
+    <ellipse cx="30" cy="30" rx="25" ry="10" fill="none" stroke="#ff7da8" stroke-width="2" transform="rotate(30, 30, 30)" />
+    <ellipse cx="30" cy="30" rx="25" ry="10" fill="none" stroke="#ffc857" stroke-width="2" transform="rotate(90, 30, 30)" />
+    
+    <!-- Central Nucleus -->
+    <circle cx="30" cy="30" r="6" fill="#0b356f" />
+    
+    <!-- Text elements -->
+    <text x="70" y="32" font-family="'Noto Sans Thai', sans-serif" font-size="22" font-weight="800" fill="#0b356f">สสวท</text>
+    <text x="70" y="48" font-family="sans-serif" font-size="10" font-weight="600" fill="#737373" letter-spacing="2">IPST</text>
+  </g>
+</svg>
