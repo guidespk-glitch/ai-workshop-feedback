@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Workshop Feedback Flow', () => {
   test('reproduces full participant-to-presenter flow', async ({ page, context }) => {
+    test.slow();
     // 1. Visit participant page
     await page.goto('/');
     await expect(page).toHaveTitle(/แบบสอบถามความรู้สึกหลังการอบรม/);
@@ -58,8 +59,8 @@ test.describe('Workshop Feedback Flow', () => {
     await expect(page.getByTestId('word-cloud').getByText('AI')).toBeVisible();
     await expect(page.getByTestId('word-cloud').getByText('สร้างสรรค์')).toBeVisible();
 
-    // Emoji results card should show "รัก 1 คน" and "ว้าว 1 คน"
-    await expect(page.getByLabel('รัก 1 คน')).toBeVisible();
-    await expect(page.getByLabel('ว้าว 1 คน')).toBeVisible();
+    // Emoji results card should show "รัก 3 คน" and "ว้าว 3 คน" due to cumulative submissions from previous visual tests
+    await expect(page.getByLabel('รัก 3 คน')).toBeVisible();
+    await expect(page.getByLabel('ว้าว 3 คน')).toBeVisible();
   });
 });

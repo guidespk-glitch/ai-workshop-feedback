@@ -49,10 +49,12 @@ export function createApp({
   // Cookie parsing with signed secret
   app.use(cookieParser(config.cookieSecret));
 
-  // Rate limiters
+  // Rate limiters (bypassed/relaxed in testing environments)
+  const isTestEnv = config.nodeEnv === 'test' || process.env.MOCK_DATABASE === 'true';
+
   const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5,
+    max: isTestEnv ? 10000 : 5,
     message: { error: 'กรอกรหัสผ่านผิดเกินกำหนด โปรดลองอีกครั้งในภายหลัง' },
     standardHeaders: true,
     legacyHeaders: false,
@@ -60,7 +62,7 @@ export function createApp({
 
   const submissionLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 10,
+    max: isTestEnv ? 10000 : 10,
     message: { error: 'ส่งข้อมูลบ่อยเกินไป โปรดลองอีกครั้งในภายหลัง' },
     standardHeaders: true,
     legacyHeaders: false,

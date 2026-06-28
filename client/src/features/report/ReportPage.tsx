@@ -97,16 +97,16 @@ export const ReportPage: React.FC = () => {
           <div className="report-actions no-print">
             <div className="report-button-row">
               <button type="button" className="report-export-btn report-export-pdf" onClick={exportReportPdf}>
-                <span aria-hidden="true">📄</span>
+                <span className="btn-icon" aria-hidden="true">📄</span>
                 Export PDF
               </button>
               <button type="button" className="report-export-btn report-export-excel" onClick={() => exportReportExcel(report)}>
-                <span aria-hidden="true">📗</span>
+                <span className="btn-icon" aria-hidden="true">📗</span>
                 Export Excel
               </button>
             </div>
             <div className="report-generated-at">
-              🕒 ออกรายงาน: {formatThaiDateTime(report.generatedAt)} น.
+              🕒 ออกรายงาน: {formatThaiDateTime(report.generatedAt)}
             </div>
           </div>
         </header>
@@ -139,24 +139,28 @@ function KpiRow({ report }: { report: ReturnType<typeof buildReportSummary> }) {
       label: 'ผู้ตอบทั้งหมด',
       value: report.totalSubmissions,
       suffix: 'คน',
+      iconClass: 'icon-blue',
     },
     {
       icon: '💬',
       label: 'คำตอบทั้งหมด',
       value: report.totalAnswers,
       suffix: 'คำตอบ',
+      iconClass: 'icon-blue',
     },
     {
-      icon: report.topEmoji?.emoji || '🙂',
+      icon: report.topEmoji?.emoji || '😍',
       label: 'Emoji สูงสุด',
       value: report.topEmoji?.label || '-',
       suffix: report.topEmoji?.emoji || '',
+      iconClass: 'icon-orange',
     },
     {
-      icon: '🙂',
+      icon: '😌',
       label: 'ภาพรวมความรู้สึก',
       value: `เชิงบวก ${report.positivePercent}%`,
       suffix: '',
+      iconClass: 'icon-blue',
     },
   ];
 
@@ -164,12 +168,12 @@ function KpiRow({ report }: { report: ReturnType<typeof buildReportSummary> }) {
     <section className="report-kpi-row">
       {items.map((item) => (
         <article className="report-kpi-card" key={item.label}>
-          <div className="report-kpi-icon">{item.icon}</div>
+          <div className={`report-kpi-icon ${item.iconClass}`}>{item.icon}</div>
           <div>
             <div className="report-kpi-label">{item.label}</div>
             <div className="report-kpi-value">
               {item.value}
-              {item.suffix && <span>{item.suffix}</span>}
+              {item.suffix && <span className="kpi-suffix">{item.suffix}</span>}
             </div>
           </div>
         </article>
@@ -193,6 +197,26 @@ function CardTitle({ number, title, subtitle }: { number: string; title: string;
 function WordCloudReportCard({ report }: { report: ReturnType<typeof buildReportSummary> }) {
   const maxCount = report.words.length > 0 ? Math.max(...report.words.map((item) => item.count)) : 0;
 
+  // Predefined cloud distribution order to place larger words in the center
+  const distributionOrder = [
+    12, 10, 8, 6, 4, 2, 0, 1, 3, 5, 7, 9, 11, 13
+  ];
+
+  const displayedWords = useMemo(() => {
+    const sorted = [...report.words].sort((a, b) => b.count - a.count);
+    const result: typeof sorted = [];
+    for (const index of distributionOrder) {
+      if (sorted[index] !== undefined) {
+        result.push(sorted[index]);
+      }
+    }
+    // Append remaining
+    for (let i = 14; i < sorted.length; i++) {
+      result.push(sorted[i]);
+    }
+    return result.slice(0, 20); // Show top 20 words
+  }, [report.words]);
+
   return (
     <article className="report-card report-word-card">
       <CardTitle number="1" title="สรุปคำตอบข้อ 1" subtitle="สิ่งที่ได้จากการอบรม" />
@@ -200,21 +224,31 @@ function WordCloudReportCard({ report }: { report: ReturnType<typeof buildReport
       {report.words.length === 0 ? (
         <div className="report-empty-state">ยังไม่มีคำตอบข้อความ</div>
       ) : (
-        <div className="report-word-cloud">
-          {report.words.slice(0, 28).map((item, index) => {
-            const ratio = maxCount > 0 ? item.count / maxCount : 0;
-            const fontSize = Math.round(18 + Math.sqrt(ratio) * 54);
+        <div className="report-word-cloud-wrapper">
+          {/* Decorative Sparkles */}
+          <span className="sparkle sparkle-1">✦</span>
+          <span className="sparkle sparkle-2">✦</span>
+          <span className="sparkle sparkle-3">✦</span>
+          <span className="sparkle sparkle-4">✦</span>
+          <span className="sparkle sparkle-5">✦</span>
+          
+          <div className="report-word-cloud">
+            {displayedWords.map((item, index) => {
+              const ratio = maxCount > 0 ? item.count / maxCount : 0;
+              // Size scaling clamped between 14px and 42px to look extremely clean and elegant
+              const fontSize = Math.round(14 + Math.sqrt(ratio) * 28);
 
-            return (
-              <span
-                key={`${item.key}-${index}`}
-                className={`report-cloud-word report-word-color-${(index % 5) + 1}`}
-                style={{ fontSize: `${fontSize}px` }}
-              >
-                {item.label || item.key}
-              </span>
-            );
-          })}
+              return (
+                <span
+                  key={`${item.key}-${index}`}
+                  className={`report-cloud-word report-word-color-${(index % 5) + 1}`}
+                  style={{ fontSize: `${fontSize}px` }}
+                >
+                  {item.label || item.key}
+                </span>
+              );
+            })}
+          </div>
         </div>
       )}
     </article>
@@ -242,9 +276,9 @@ function TopWordsReportCard({ report }: { report: ReturnType<typeof buildReportS
           ) : (
             report.topWords.map((item, index) => (
               <tr key={item.key}>
-                <td>{index + 1}</td>
-                <td>{item.label || item.key}</td>
-                <td>{item.count}</td>
+                <td className="rank-num">{index + 1}</td>
+                <td className="answer-text">{item.label || item.key}</td>
+                <td className="count-num">{item.count}</td>
               </tr>
             ))
           )}
@@ -255,31 +289,43 @@ function TopWordsReportCard({ report }: { report: ReturnType<typeof buildReportS
 }
 
 function EmojiReportCard({ report }: { report: ReturnType<typeof buildReportSummary> }) {
-  const totalSelections = report.emojis.reduce((sum, item) => sum + item.count, 0);
-
   return (
     <article className="report-card report-emoji-card">
       <CardTitle number="3" title="สรุปผลความรู้สึกจาก Emoji" />
 
-      <div className="report-emoji-ranking">
-        {report.emojis.map((item, index) => (
-          <div className={`report-emoji-item ${index === 0 ? 'report-emoji-top' : ''}`} key={item.id}>
-            {index < 3 && <div className="report-rank-label">อันดับ {index + 1}</div>}
-            {index >= 3 && <div className="report-rank-label">&nbsp;</div>}
-            <div className="report-emoji-icon">
-              {item.emoji}
-            </div>
-            <div className="report-emoji-label">{item.label}</div>
-            <div className="report-emoji-stats">
-              <span className="report-emoji-count">จำนวน (คน)</span>
-              <span className="report-emoji-count-value">{item.count}</span>
-            </div>
-            <div className="report-emoji-stats">
-              <span className="report-emoji-percent-label">ร้อยละ</span>
-              <span className="report-emoji-percent-value">{totalSelections > 0 ? item.percent : 0}%</span>
-            </div>
-          </div>
-        ))}
+      <div className="report-emoji-table-wrapper">
+        <table className="report-emoji-table">
+          <thead>
+            <tr>
+              <th className="row-label-header"></th>
+              {report.emojis.map((item, index) => (
+                <th key={item.id} className={`emoji-col-header ${index < 3 ? 'top-rank-col' : ''}`}>
+                  <div className="rank-label">{index < 3 ? `อันดับ ${index + 1}` : <span>&nbsp;</span>}</div>
+                  <div className="emoji-icon">{item.emoji}</div>
+                  <div className="emoji-name">{item.label}</div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className="row-label">จำนวน (คน)</td>
+              {report.emojis.map((item, index) => (
+                <td key={item.id} className={`emoji-data-cell count-cell ${index < 3 ? 'top-rank-data' : ''}`}>
+                  {item.count}
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <td className="row-label">ร้อยละ</td>
+              {report.emojis.map((item, index) => (
+                <td key={item.id} className={`emoji-data-cell percent-cell ${index < 3 ? 'top-rank-data highlighted-percent' : ''}`}>
+                  {item.percent}%
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
       </div>
     </article>
   );
@@ -291,7 +337,23 @@ function AutoSummaryCard({ summary }: { summary: string }) {
       <CardTitle number="4" title="สรุปผลอัตโนมัติ" />
 
       <div className="report-summary-box">
-        <p>{summary}</p>
+        <div className="report-summary-icon-container">
+          <svg viewBox="0 0 60 70" width="44" height="52" className="summary-clipboard-svg" aria-hidden="true">
+            {/* Clipboard base */}
+            <rect x="10" y="12" width="40" height="50" rx="6" fill="#eaf3ff" stroke="#3b82f6" strokeWidth="3" />
+            {/* Top clip */}
+            <path d="M22 6 h16 a2 2 0 0 1 2 2 v6 a2 2 0 0 1 -2 2 h-16 a2 2 0 0 1 -2 -2 v-6 a2 2 0 0 1 2 -2 z" fill="#3b82f6" />
+            {/* Document lines */}
+            <line x1="20" y1="28" x2="40" y2="28" stroke="#93c5fd" strokeWidth="3" strokeLinecap="round" />
+            <line x1="20" y1="38" x2="40" y2="38" stroke="#93c5fd" strokeWidth="3" strokeLinecap="round" />
+            <line x1="20" y1="48" x2="34" y2="48" stroke="#93c5fd" strokeWidth="3" strokeLinecap="round" />
+            {/* Checkmarks / bullets (little yellow checks) */}
+            <path d="M15 28 l2 2 l4 -4" stroke="#fb923c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            <path d="M15 38 l2 2 l4 -4" stroke="#fb923c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            <path d="M15 48 l2 2 l4 -4" stroke="#fb923c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          </svg>
+        </div>
+        <p className="summary-text">{summary}</p>
       </div>
     </article>
   );
