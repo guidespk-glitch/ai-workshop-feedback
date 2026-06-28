@@ -1,5 +1,11 @@
 import React from 'react';
 import type { WordResult } from '../../../../shared/results';
+import {
+  calculateWordSize,
+  layoutWordCloud,
+  WORD_CLOUD_HEIGHT,
+  WORD_CLOUD_WIDTH,
+} from './wordCloudLayout';
 
 interface WordCloudCardProps {
   words: WordResult[];
@@ -7,21 +13,7 @@ interface WordCloudCardProps {
 
 export const WordCloudCard: React.FC<WordCloudCardProps> = ({ words }) => {
   const maxCount = words.length > 0 ? Math.max(...words.map((w) => w.count)) : 0;
-
-  const calculateWordSize = (count: number, max: number): number => {
-    const minSize = 28; // base size when a word is submitted 1 time
-    const maxSize = 96; // maximum size for the highest count word
-    
-    if (max <= 1) {
-      return minSize;
-    }
-    
-    // Scale count between 1 and max:
-    // When count is 1, it should return minSize.
-    // When count is max, it should return maxSize.
-    const ratio = (count - 1) / (max - 1);
-    return Math.round(minSize + (maxSize - minSize) * Math.sqrt(ratio));
-  };
+  const placements = layoutWordCloud(words);
 
   const getWordColor = (word: string): string => {
     // 3-tone palette colors: Blues, Pinks, Yellows
@@ -48,27 +40,49 @@ export const WordCloudCard: React.FC<WordCloudCardProps> = ({ words }) => {
           <p className="empty-results-message">กำลังรอคำตอบจากผู้เข้าร่วมการอบรม...</p>
         </div>
       ) : (
-        <div className="word-cloud-container" data-testid="word-cloud">
-          {/* Stable horizontal wrap-around word layout */}
-          {words.map((word) => {
-            const fontSize = calculateWordSize(word.count, maxCount);
-            return (
-              <span
+        placements.length === words.length ? (
+          <svg
+            className="word-cloud-container"
+            data-testid="word-cloud"
+            viewBox={`0 0 ${WORD_CLOUD_WIDTH} ${WORD_CLOUD_HEIGHT}`}
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="กลุ่มคำสิ่งที่ผู้เข้าร่วมได้รับจากการอบรม"
+          >
+            {placements.map(({ word, x, y, fontSize }) => (
+              <text
                 key={word.key}
                 className="word-cloud-item"
+                x={x}
+                y={y}
+                textAnchor="middle"
+                dominantBaseline="central"
                 style={{
                   fontSize: `${fontSize}px`,
-                  color: getWordColor(word.key),
+                  fill: getWordColor(word.key),
                   fontWeight: fontSize > 40 ? 800 : 600,
-                  transition: 'font-size 0.3s ease, color 0.3s ease',
                 }}
-                title={`คำ: ${word.label} (${word.count} คน)`}
+                aria-label={`${word.label} ${word.count} คน`}
               >
                 {word.label}
-              </span>
-            );
-          })}
-        </div>
+              </text>
+            ))}
+          </svg>
+        ) : (
+          <div className="word-cloud-fallback" data-testid="word-cloud-fallback">
+            {words.map((word) => {
+              const fontSize = calculateWordSize(word.count, maxCount);
+              return (
+                <span
+                  key={word.key}
+                  style={{ fontSize: `${Math.min(fontSize, 52)}px`, color: getWordColor(word.key) }}
+                >
+                  {word.label}
+                </span>
+              );
+            })}
+          </div>
+        )
       )}
     </div>
   );

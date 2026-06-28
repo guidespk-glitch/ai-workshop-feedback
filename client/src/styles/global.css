@@ -771,25 +771,37 @@ input:focus-visible {
 
 /* Word Cloud Styles */
 .word-cloud-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  align-content: center;
-  gap: 16px 24px;
-  padding: 20px;
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
   min-height: 380px;
 }
 
 .word-cloud-item {
-  display: inline-block;
-  white-space: nowrap;
-  line-height: 1.1;
-  transition: all 0.3s ease;
+  font-family: var(--font-family);
+  paint-order: stroke;
+  stroke: rgba(255, 255, 255, 0.72);
+  stroke-width: 2px;
+  transition: font-size 0.35s ease, fill 0.35s ease, transform 0.35s ease;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .word-cloud-item:hover {
   transform: scale(1.1);
+}
+
+.word-cloud-fallback {
+  min-height: 380px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  align-items: center;
+  justify-content: center;
+  gap: 14px 22px;
+  padding: 20px;
+  font-weight: 700;
 }
 
 .empty-results-container {

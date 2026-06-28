@@ -52,6 +52,10 @@ describe('PresenterPage', () => {
   it('renders larger words and emoji for higher counts', () => {
     render(<PresenterPage initialResults={sampleResults} socketState="connected" />);
 
+    const cloud = screen.getByTestId('word-cloud');
+    expect(cloud.tagName).toBe('svg');
+    expect(cloud).toHaveAttribute('viewBox', '0 0 720 380');
+
     // Verify word cloud layout sizes
     const aiWord = screen.getByText('AI');
     expect(aiWord).toHaveStyle({ fontSize: '96px' }); // formula maps maxCount to 96px
