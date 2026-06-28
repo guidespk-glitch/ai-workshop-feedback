@@ -774,6 +774,7 @@ input:focus-visible {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  align-items: center;
   align-content: center;
   gap: 16px 24px;
   padding: 20px;
@@ -784,15 +785,11 @@ input:focus-visible {
   display: inline-block;
   white-space: nowrap;
   line-height: 1.1;
-  padding: 4px 8px;
-  border-radius: var(--radius-md);
-  background-color: rgba(25, 118, 223, 0.02);
   transition: all 0.3s ease;
 }
 
 .word-cloud-item:hover {
-  background-color: rgba(25, 118, 223, 0.06);
-  transform: scale(1.05);
+  transform: scale(1.1);
 }
 
 .empty-results-container {

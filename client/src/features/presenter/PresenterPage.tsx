@@ -77,6 +77,21 @@ export const PresenterPage: React.FC<PresenterPageProps> = ({
     };
   }, [sessionLoading, initialResults]);
 
+  // Fail-safe fallback polling for non-websocket environments
+  useEffect(() => {
+    if (sessionLoading || initialResults) return;
+
+    const interval = setInterval(() => {
+      getPresenterResults()
+        .then((data) => {
+          setResults(data);
+        })
+        .catch(() => {});
+    }, 3000); // Poll every 3 seconds
+
+    return () => clearInterval(interval);
+  }, [sessionLoading, initialResults]);
+
   const handleLogout = async () => {
     try {
       await logoutPresenter();

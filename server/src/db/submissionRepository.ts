@@ -79,17 +79,21 @@ export class SubmissionRepository {
   }
 
   async getAggregateSource(): Promise<AggregateSource> {
-    const [[countRow], answerRows, emojiRows] = await Promise.all([
+    const [countResult, answerResult, emojiResult] = await Promise.all([
       this.pool.execute('SELECT COUNT(*) AS total FROM submissions'),
       this.pool.execute('SELECT answer_text AS answerText FROM submission_answers ORDER BY submission_id, answer_index'),
       this.pool.execute(`SELECT emoji_id AS id, COUNT(*) AS count
                          FROM submission_emojis GROUP BY emoji_id`),
     ]);
 
+    const countRows = countResult[0] as CountRow[];
+    const answerRows = answerResult[0] as AnswerRow[];
+    const emojiRows = emojiResult[0] as EmojiCountRow[];
+
     return {
-      totalSubmissions: Number((countRow as CountRow).total),
-      answers: (answerRows[0] as AnswerRow[]).map((row) => row.answerText),
-      emojiCounts: (emojiRows[0] as EmojiCountRow[]).map((row) => ({
+      totalSubmissions: Number(countRows[0]?.total ?? 0),
+      answers: answerRows.map((row) => row.answerText),
+      emojiCounts: emojiRows.map((row) => ({
         id: row.id,
         count: Number(row.count),
       })),
