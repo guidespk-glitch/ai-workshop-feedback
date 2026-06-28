@@ -519,9 +519,11 @@
 
 @media print {
   body {
-    background: #ffffff !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    background: radial-gradient(circle at 4% 14%, rgba(191, 219, 254, 0.6) 0 100px, transparent 120px),
+                radial-gradient(circle at 96% 91%, rgba(255, 237, 213, 0.5) 0 130px, transparent 150px),
+                linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%) !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   .no-print {
@@ -532,9 +534,11 @@
     width: 100vw;
     height: 100vh;
     padding: 10mm 15mm !important;
-    background: #ffffff !important;
+    background: transparent !important;
     overflow: hidden;
     box-sizing: border-box;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   .report-shell {
@@ -550,6 +554,11 @@
 
   .report-kpi-card {
     padding: 10px 16px;
+    background: var(--report-card) !important;
+    box-shadow: var(--report-shadow) !important;
+    border: 1px solid var(--report-border) !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   .report-grid {
@@ -559,6 +568,11 @@
   .report-card {
     padding: 12px;
     border-radius: 14px;
+    background: var(--report-card) !important;
+    box-shadow: var(--report-shadow) !important;
+    border: 1px solid var(--report-border) !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   .report-word-cloud-wrapper {
@@ -572,6 +586,16 @@
   .report-emoji-table th,
   .report-emoji-table td {
     padding: 6px;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .report-emoji-table th.top-rank-col {
+    background: linear-gradient(180deg, #ffe8cc, #ffffff) !important;
+  }
+
+  .report-emoji-table td.top-rank-data {
+    background: #fff4e6 !important;
   }
 
   .report-emoji-table .emoji-icon {
@@ -580,6 +604,9 @@
 
   .report-summary-box {
     padding: 10px 16px;
+    background: linear-gradient(135deg, #f0f7ff, #ffffff) !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   .report-summary-box p.summary-text {

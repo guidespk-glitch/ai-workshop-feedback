@@ -197,24 +197,19 @@ function CardTitle({ number, title, subtitle }: { number: string; title: string;
 function WordCloudReportCard({ report }: { report: ReturnType<typeof buildReportSummary> }) {
   const maxCount = report.words.length > 0 ? Math.max(...report.words.map((item) => item.count)) : 0;
 
-  // Predefined cloud distribution order to place larger words in the center
-  const distributionOrder = [
-    12, 10, 8, 6, 4, 2, 0, 1, 3, 5, 7, 9, 11, 13
-  ];
-
   const displayedWords = useMemo(() => {
-    const sorted = [...report.words].sort((a, b) => b.count - a.count);
-    const result: typeof sorted = [];
-    for (const index of distributionOrder) {
-      if (sorted[index] !== undefined) {
-        result.push(sorted[index]);
+    const sorted = [...report.words].sort((a, b) => b.count - a.count).slice(0, 45);
+    const left: typeof sorted = [];
+    const right: typeof sorted = [];
+    
+    for (let i = 0; i < sorted.length; i++) {
+      if (i % 2 === 0) {
+        right.push(sorted[i]);
+      } else {
+        left.unshift(sorted[i]);
       }
     }
-    // Append remaining
-    for (let i = 14; i < sorted.length; i++) {
-      result.push(sorted[i]);
-    }
-    return result.slice(0, 20); // Show top 20 words
+    return [...left, ...right];
   }, [report.words]);
 
   return (
@@ -235,8 +230,8 @@ function WordCloudReportCard({ report }: { report: ReturnType<typeof buildReport
           <div className="report-word-cloud">
             {displayedWords.map((item, index) => {
               const ratio = maxCount > 0 ? item.count / maxCount : 0;
-              // Size scaling clamped between 14px and 42px to look extremely clean and elegant
-              const fontSize = Math.round(14 + Math.sqrt(ratio) * 28);
+              // Size scaling clamped between 10px and 34px to fit up to 45 words beautifully inside the fixed card
+              const fontSize = Math.round(10 + Math.sqrt(ratio) * 24);
 
               return (
                 <span
