@@ -8,7 +8,7 @@ export const BrandHeader: React.FC<BrandHeaderProps> = ({ onLogoClick }) => {
   return (
     <header className="brand-header">
       <img
-        src="/brand/ipst-logo.svg"
+        src="/brand/ipst-logo.png"
         alt="โลโก้ สสวท."
         className="brand-logo"
         onClick={onLogoClick}

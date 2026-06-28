@@ -144,7 +144,7 @@ export const PresenterPage: React.FC<PresenterPageProps> = ({
     <div className="presenter-dashboard-layout">
       <header className="presenter-header">
         <div className="presenter-header-left">
-          <img src="/brand/ipst-logo.svg" alt="โลโก้ สสวท." className="presenter-logo" />
+          <img src="/brand/ipst-logo.png" alt="โลโก้ สสวท." className="presenter-logo" />
           <div>
             <h1 className="presenter-title">หน้าจอผู้นำเสนอ</h1>
             <p className="presenter-training">
