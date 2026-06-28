@@ -501,8 +501,8 @@
   white-space: nowrap;
 }
 
-/* ─── Responsive ─── */
-@media (max-width: 1024px) {
+/* ─── Responsive (Screen Only) ─── */
+@media screen and (max-width: 1024px) {
   .report-kpi-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -544,12 +544,14 @@
   .report-shell {
     width: 100%;
     max-width: none;
-    transform: scale(0.96); /* Scale slightly to fit safely on A4 */
+    transform: scale(0.88) !important; /* Scale safely to fit within A4 Landscape printable area */
     transform-origin: top center;
   }
 
   .report-kpi-row {
-    gap: 12px;
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 12px !important;
   }
 
   .report-kpi-card {
@@ -562,7 +564,9 @@
   }
 
   .report-grid {
-    gap: 12px;
+    display: grid !important;
+    grid-template-columns: 1.15fr 1fr !important;
+    gap: 12px !important;
   }
 
   .report-card {
