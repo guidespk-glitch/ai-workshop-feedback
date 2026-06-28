@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import request from 'supertest';
 import express from 'express';
 import { createApp } from './app';
@@ -54,6 +54,10 @@ describe('Express API App', () => {
       presenterAuthService: presenterAuthServiceMock as unknown as PresenterAuthService,
       sessionStore: undefined as any, // use memory store
     });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   describe('Origin check and basic headers', () => {
@@ -128,6 +132,22 @@ describe('Express API App', () => {
   });
 
   describe('Presenter API endpoints', () => {
+    it('does not write PIN or session details to console output', async () => {
+      presenterAuthServiceMock.verify.mockResolvedValue(true);
+      const consoleLog = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+      const agent = request.agent(app);
+
+      await agent
+        .post('/api/presenter/login')
+        .set('Origin', 'https://feedback.thatumdonruea.com')
+        .send({ pin: '123456' });
+      await agent
+        .get('/api/presenter/session')
+        .set('Origin', 'https://feedback.thatumdonruea.com');
+
+      expect(consoleLog).not.toHaveBeenCalled();
+    });
+
     it('keeps presenter results private with 401', async () => {
       const response = await request(app)
         .get('/api/presenter/results')

@@ -160,23 +160,20 @@ export function createApp({
   app.post('/api/presenter/login', loginLimiter, async (req, res) => {
     try {
       const { pin } = req.body;
-      console.log('[DEBUG] Login PIN attempt:', pin);
       if (!pin) {
         res.status(400).json({ error: 'โปรดระบุรหัสผ่าน (PIN)' });
         return;
       }
 
       const isValid = await presenterAuthService.verify(pin);
-      console.log('[DEBUG] PIN validation result:', isValid);
       if (isValid) {
         (req.session as any).presenter = true;
-        console.log('[DEBUG] Session set presenter=true, sessionID:', req.sessionID);
         res.status(200).json({ success: true });
       } else {
         res.status(401).json({ error: 'รหัสผ่าน (PIN) ไม่ถูกต้อง' });
       }
-    } catch (error: any) {
-      console.error('[DEBUG] Login error:', error);
+    } catch {
+      console.error('Presenter login failed.');
       res.status(500).json({ error: 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์' });
     }
   });
@@ -196,7 +193,6 @@ export function createApp({
   // Presenter Session Check
   app.get('/api/presenter/session', (req, res) => {
     const authenticated = !!(req.session as any).presenter;
-    console.log('[DEBUG] Session check, sessionID:', req.sessionID, 'authenticated:', authenticated, 'session:', req.session);
     res.status(200).json({ authenticated });
   });
 
